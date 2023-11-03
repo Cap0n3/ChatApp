@@ -13,7 +13,7 @@ class Room(models.Model):
         self.online.add(user)
         self.save()
 
-    def leave(self):
+    def leave(self, user):
         self.online.remove(user)
         self.save()
 
