@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
+import logging
+import logging.config
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -137,3 +140,57 @@ CHANNEL_LAYERS = {
         },
     }
 }
+
+# === Logging configuration === #
+class HTTPDebugFilter(logging.Filter):
+    def filter(self, record):
+        # Filter out DEBUG messages with a message starting with "HTTP"
+        return not (record.levelno == logging.DEBUG and record.msg.startswith("HTTP"))
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {process:d} {thread:d} - {message}",
+            "style": "{",
+        },
+        "simple": {
+            "format": "{levelname} {asctime} - {message}",
+            "style": "{",
+        },
+    },
+    "filters": {
+        "http_debug_filter": {
+            "()": HTTPDebugFilter,
+        },
+    },
+    "handlers": {
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": "core/logs/debug.log",
+            "formatter": "simple",
+            "filters": ["http_debug_filter"],
+        },
+    },
+    "root": {
+        "handlers": ["console", "file"],
+        "level": "DEBUG",
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console", "file"],
+            "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
+            "propagate": False,
+        },
+    },
+}
+
+logging.config.dictConfig(LOGGING)
+logger = logging.getLogger(__name__)

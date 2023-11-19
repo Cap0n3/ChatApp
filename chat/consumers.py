@@ -1,5 +1,6 @@
+from core.settings import logger
+from django.conf import settings
 import json
-
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 
@@ -14,6 +15,8 @@ class ChatConsumer(WebsocketConsumer):
         self.user = None
         self.user_inbox = None #For private messaging
 
+        logger.debug("[***] ChatConsumer created [***]")
+
     def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = f"chat_{self.room_name}"
@@ -21,14 +24,24 @@ class ChatConsumer(WebsocketConsumer):
         self.user = self.scope['user']
         self.user_inbox = f'inbox_{self.user.username}'
 
+        logger.debug(f"Received scope: {self.scope}")
+
         # Connextion has to be accepted
         self.accept()
 
-        # Join the room group
+        # Log the connection
+        if not self.user.is_authenticated:
+            logger.warning(f"Unauthenticated user tried to join room {self.room_name}")
+        else:
+            logger.info(f"User {self.user.username} successfully connected to room {self.room_name}")
+
+        # Join or create the room
         async_to_sync(self.channel_layer.group_add)(
             self.room_group_name,
             self.channel_name
         )
+
+        logger.info(f"User {self.user.username} successfully joined room {self.room_name}")
 
         # Send the user list ot the newly joined user
         self.send(json.dumps({
@@ -61,6 +74,8 @@ class ChatConsumer(WebsocketConsumer):
             self.channel_name,
         )
 
+        logger.info(f"User {self.user.username} successfully left room {self.room_name}")
+
         if self.user.is_authenticated:
             # === Private Messaging === #
             # Delete the user inbox for private messaging
@@ -68,6 +83,7 @@ class ChatConsumer(WebsocketConsumer):
                 self.user_inbox,
                 self.channel_name,
             )
+            logger.debug(f"User {self.user.username} successfully deleted inbox {self.user_inbox}")
 
             # === Generate Event === #
             # Send leave event to the room
@@ -78,6 +94,8 @@ class ChatConsumer(WebsocketConsumer):
                     'user': self.user.username,
                 }
             )
+            logger.debug(f"Sent leave event to room {self.room_name} for user {self.user.username}")
+            
             self.room.online.remove(self.user)
 
     def receive(self, text_data=None, bytes_data=None):
@@ -85,7 +103,10 @@ class ChatConsumer(WebsocketConsumer):
         message = text_data_json['message']
 
         if not self.user.is_authenticated:
+            logger.warning(f"Unauthenticated user tried to send message to room {self.room_name}")
             return
+        else:
+            logger.info(f"User {self.user.username} successfully sent message ['{message}'] to room {self.room_name}")
         
         # === Private Messaging === #
         if message.startswith('/pm'):

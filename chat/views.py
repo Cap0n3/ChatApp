@@ -1,16 +1,31 @@
 from django.shortcuts import render
+from django.views.generic import ListView
 from chat.models import Room, Message
+from core.settings import logger
 
-# Create your views here.
+class RoomListView(ListView):
+    '''
+    Get all the rooms and return them to the template.
+    '''
+    model = Room
+    template_name = 'chat/index.html'
+    context_object_name = 'rooms'
 
-def index_view(request):
-    return render(request, 'chat/index.html', {
-        'rooms': Room.objects.all()
-    })
+    def get_queryset(self):
+        return Room.objects.all()
 
-def room_view(request, room_name):
-    chat_room, created = Room.objects.get_or_create(name=room_name)
-    
-    return render(request, 'chat/room.html', {
-        'room': chat_room,
-    })
+class RoomView(ListView):
+    '''
+    Get the room name from the URL and return the room object. If the room does not exist, it is created.
+    '''
+    model = Room
+    template_name = 'chat/room.html'
+    context_object_name = 'room'
+
+    def get_queryset(self):
+        chat_room, created = Room.objects.get_or_create(name=self.kwargs['room_name'])
+        
+        if created:
+            logger.info(f"Room {chat_room} created")
+        
+        return chat_room
