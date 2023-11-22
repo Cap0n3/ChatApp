@@ -115,14 +115,21 @@ class ChatConsumer(WebsocketConsumer):
             target_msg = split[2]
 
             # Send private message event to the target user
-            async_to_sync(self.channel_layer.group_send)(
-                f'inbox_{target}',
-                {
-                    'type': 'private_message',
-                    'user': self.user.username,
-                    'message': target_msg,
-                }
-            )
+            try:
+                async_to_sync(self.channel_layer.group_send)(
+                    f'inbox_{target}',
+                    {
+                        'type': 'private_message',
+                        'user': self.user.username,
+                        'message': target_msg,
+                    }
+                )
+            except Exception as e:
+                logger.error(f"Error while sending private message to {target}: {e}")
+                return
+            else:
+                logger.info(f"User {self.user.username} successfully sent private message ['{target_msg}'] to {target}")
+            
 
             # Send private message delivered to the sender
             self.send(json.dumps({
