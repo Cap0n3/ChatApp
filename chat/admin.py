@@ -5,4 +5,3 @@ from .models import ChatServer, Room, Message
 admin.site.register(ChatServer)
 admin.site.register(Room)
 admin.site.register(Message)
-
