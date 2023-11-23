@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from django.views.generic import ListView, DetailView
+from django.views import View
 from chat.models import ChatServer, Room, Message
 from .forms import CreateServerForm
 from core.settings import logger
@@ -46,33 +47,30 @@ class ServerView(DetailView):
     template_name = "chat/server.html"
     context_object_name = "server"
 
-
-# class RoomListView(ListView):
-#     """
-#     Get all the rooms and return them to the template.
-#     """
-
-#     model = Room
-#     template_name = "chat/server.html"
-#     context_object_name = "rooms"
-
-#     def get_queryset(self):
-#         return Room.objects.all()
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        server_instance = ChatServer.objects.get(id=self.kwargs["pk"])
+        context["rooms"] = Room.objects.filter(server=server_instance)
+        return context
 
 
-# class RoomView(ListView):
-#     """
-#     Get the room name from the URL and return the room object. If the room does not exist, it is created.
-#     """
+class RoomView(View):
+    """
+    Get the room name from the URL and return the room object. If the room does not exist, it is created.
+    """
 
-#     model = Room
-#     template_name = "chat/room.html"
-#     context_object_name = "room"
+    template_name = "chat/room.html"
 
-#     def get_queryset(self):
-#         chat_room, created = Room.objects.get_or_create(name=self.kwargs["room_name"])
+    def get(self, request, *args, **kwargs):
+        server_instance = ChatServer.objects.get(id=self.kwargs["pk"])
+        room_name = self.kwargs["room_name"]
+        chat_room, created = Room.objects.get_or_create(
+            server=server_instance, name=room_name
+        )
 
-#         if created:
-#             logger.info(f"Room {chat_room} created")
+        if created:
+            logger.info(f"Room {chat_room} created")
 
-#         return chat_room
+        context = {"room": chat_room}
+
+        return render(request, self.template_name, context)

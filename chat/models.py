@@ -15,7 +15,7 @@ class ChatServer(models.Model):
 # Create your models here.
 class Room(models.Model):
     server = models.ForeignKey(ChatServer, on_delete=models.CASCADE)
-    name = models.CharField(max_length=1000)
+    name = models.CharField(max_length=1000, unique=True)
     online = models.ManyToManyField(User, blank=True)
 
     def get_online_count(self):

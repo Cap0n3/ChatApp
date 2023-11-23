@@ -1,4 +1,4 @@
-export function homePage() {
+export function serverPage(currentURL) {
     console.log("Sanity check from homePage().");
 
     // focus 'roomInput' when user opens the page
@@ -14,12 +14,12 @@ export function homePage() {
     // redirect to '/room/<roomInput>/'
     document.querySelector("#roomConnect").onclick = function() {
         let roomName = document.querySelector("#roomInput").value;
-        window.location.pathname = "chat/" + roomName + "/";
+        window.location.pathname = currentURL + roomName + "/";
     }
     
     // redirect to '/room/<roomSelect>/'
     document.querySelector("#roomSelect").onchange = function() {
         let roomName = document.querySelector("#roomSelect").value.split(" (")[0];
-        window.location.pathname = "chat/" + roomName + "/";
+        window.location.pathname = currentURL + roomName + "/";
     }    
 }
