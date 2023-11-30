@@ -8,8 +8,18 @@ class CreateServerForm(ModelForm):
     class Meta:
         model = ChatServer
         fields = ["server_name", "users", "isPublic"]
+        labels = {
+            "server_name": "Server Name",
+            "users": "Registred Users",
+            "isPublic": "Public server",
+        }
         widgets = {
-            "server_name": forms.TextInput(attrs={"class": "form-control"}),
+            "server_name": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Enter server name",
+                }
+            ),
             "users": forms.SelectMultiple(
                 attrs={
                     "class": "form-control selectpicker",

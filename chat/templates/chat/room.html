@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% block content %}
     <div class="container mt-3 p-5">
+        <!-- Go back to server with right id -->
+        <a href="{% url 'server' room.server.id %}">Back to server "{{ room.server.server_name }}"</a>
         <h2>Welcome to room "{{ room.name }}"</h2>
         <div class="row">
             <div class="col-12 col-md-8">

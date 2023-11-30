@@ -195,3 +195,7 @@ LOGGING = {
 
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger(__name__)
+
+# === Login configuration === #
+# Replace later with a custom login page
+LOGIN_URL = "/admin"

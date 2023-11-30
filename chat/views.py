@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from django.views.generic import ListView, DetailView
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View
 from chat.models import ChatServer, Room, Message
 from .forms import CreateServerForm
@@ -38,7 +39,7 @@ class IndexView(ListView):
         return context
 
 
-class ServerView(DetailView):
+class ServerView(LoginRequiredMixin, DetailView):
     """
     Get the server name from the URL and return the server object. If the server does not exist, it is created.
     """
