@@ -17,6 +17,8 @@ class Room(models.Model):
     server = models.ForeignKey(ChatServer, on_delete=models.CASCADE)
     name = models.CharField(max_length=1000, unique=True)
     online = models.ManyToManyField(User, blank=True)
+    room_admins = models.ManyToManyField(User, blank=True, related_name="room_admins")
+
 
     def get_online_count(self):
         return self.online.count()

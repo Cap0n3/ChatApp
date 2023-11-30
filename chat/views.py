@@ -15,17 +15,20 @@ class IndexView(ListView):
     form_class = CreateServerForm
 
     def get_common_context(self):
-        return {"servers": ChatServer.objects.all(), "form": CreateServerForm()}
+        return {
+            "servers": ChatServer.objects.all(), 
+            "form": CreateServerForm(user=self.request.user)
+    }
 
     def post(self, request, *args, **kwargs):
         form = CreateServerForm(request.POST)
-        current_user = User.objects.get(username=request.user.username)
+        current_user = User.objects.get(pk=request.user.pk)
 
         if form.is_valid():
             logger.debug(f"Form is valid: {form.cleaned_data}")
             form.instance.owner = current_user
             form.save()
-            form = CreateServerForm()
+            form = CreateServerForm(user=self.request.user)
         else:
             logger.warning(f"Form is invalid: {form.errors}")
 
