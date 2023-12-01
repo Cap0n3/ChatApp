@@ -5,7 +5,7 @@ from django.db import models
 class ChatServer(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="owner")
     server_name = models.CharField(max_length=1000)
-    users = models.ManyToManyField(User, blank=True)
+    members = models.ManyToManyField(User, related_name='server_members', blank=True)
     isPublic = models.BooleanField(default=True)
 
     def __str__(self):
@@ -15,8 +15,9 @@ class ChatServer(models.Model):
 # Create your models here.
 class Room(models.Model):
     server = models.ForeignKey(ChatServer, on_delete=models.CASCADE)
+    creator = models.ForeignKey(User, related_name="room_creator", on_delete=models.CASCADE)
     name = models.CharField(max_length=1000, unique=True)
-    online = models.ManyToManyField(User, blank=True)
+    online = models.ManyToManyField(User, related_name="online_users", blank=True)
     room_admins = models.ManyToManyField(User, blank=True, related_name="room_admins")
 
 

@@ -13,14 +13,14 @@ class CreateServerForm(ModelForm):
         if self.user:
             # Exclude the current user from the list of users to invite
             registered_users = User.objects.exclude(pk=self.user.pk)
-            self.fields["users"].queryset = registered_users
+            self.fields["members"].queryset = registered_users
 
     class Meta:
         model = ChatServer
-        fields = ["server_name", "users", "isPublic"]
+        fields = ["server_name", "members", "isPublic"]
         labels = {
             "server_name": "Server Name",
-            "users": "Invite registered users",
+            "members": "Invite registered users",
             "isPublic": "Public server",
         }
         widgets = {
@@ -30,7 +30,7 @@ class CreateServerForm(ModelForm):
                     "placeholder": "Enter server name",
                 }
             ),
-            "users": forms.SelectMultiple(
+            "members": forms.SelectMultiple(
                 attrs={
                     "class": "form-control selectpicker",
                     "data-live-search": "true",
@@ -42,10 +42,14 @@ class CreateServerForm(ModelForm):
 
 class CreateRoomForm(ModelForm):
     def __init__(self, *args, **kwargs):
+        # Get the user & server instance from the kwargs (passed from the view)
+        self.user = kwargs.pop("user", None)
+        self.server_instance = kwargs.pop("instance", None)
         super(CreateRoomForm, self).__init__(*args, **kwargs)
         
-        if 'instance' in kwargs and kwargs['instance']:
-            chat_server_users = kwargs['instance'].server.users.all()
+        if self.user and self.server_instance:
+            # Exclude the current user from the list of users to invite and get the list of users in the server
+            chat_server_users = self.server_instance.members.all().exclude(pk=self.user.pk)
             self.fields['room_admins'].queryset = chat_server_users
     
     class Meta:

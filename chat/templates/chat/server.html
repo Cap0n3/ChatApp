@@ -21,5 +21,24 @@
                 </select>
             </div>
         </div>
+        <div class="row">
+            <div class="col-12">
+                <h3>Create room</h3>
+                {% if errors %}
+                    <div class="alert alert-danger" role="alert">
+                        {{ errors | safe }}
+                    </div>
+                {% endif %}
+                {% if form %}
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <input type="submit" value="Submit">
+                    </form>
+                {% else %}
+                    <p>Room creation is disabled, you are not a member of "{{ server.server_name }}"</p>
+                {% endif %}
+            </div>
+        </div>
     </div>
 {% endblock content %}
